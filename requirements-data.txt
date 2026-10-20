@@ -1,0 +1,14 @@
+-r requirements.txt
+# Match the four-package release used by the pinned competition worker.
+neuralset==0.4.0
+neuralfetch==0.4.0
+neuraltrain==0.4.0
+neuralbench==0.4.0
+exca==0.5.29
+nemar-py==0.3.3
+moabb==1.7.2
+mne==1.13.2
+# Keep the 0.4.0 neural stack on the compatible Transformers 4 API.
+transformers==4.57.3
+peft==0.17.1
+pandas>=2.2,<3

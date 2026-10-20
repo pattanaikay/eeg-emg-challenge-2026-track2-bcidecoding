@@ -1,0 +1,3 @@
+-r requirements-data.txt
+# EEGNet is imported only when that model is selected.
+braindecode==1.8.1

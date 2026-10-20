@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/neural-interfaces26/2026-competition",
+  "commit": "a66bc23d1a0e686b895c093a642b45c74970758b",
+  "snapshot": ["benchmark_utils", "tracks/bci_decoding", "README.md", "requirements.txt"],
+  "retrieved": "2026-10-20",
+  "note": "The selected source files are vendored unchanged. The track's benchmark_utils symlink is stored as its Git text representation on Windows; our CLI explicitly adds vendor/competition to PYTHONPATH."
+}

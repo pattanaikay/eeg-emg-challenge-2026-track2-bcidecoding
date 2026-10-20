@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.cache/
+vendor/**/outputs/
+vendor/**/__cache__/
+data/
+runs/
+artifacts/
+*.zip
+.env
+*.log
+.DS_Store

@@ -1,0 +1,29 @@
+# Dependencies to run the ingestion + scoring programs (Codabench worker /
+# Docker image). The ingestion program runs the bundled benchopt benchmark
+# inference-only on the submission, so it needs benchopt plus everything the
+# tracks import at run time (the benchmark and its benchmark_utils ship in
+# the phase bundle, not in the image).
+# 1.10+ for `benchopt prepare` and file-path solver/dataset selection (the
+# ingestion program selects the submission with `-s <path>/submission.py`).
+benchopt>=1.10
+pandas
+scikit-learn
+# unpinned since neuralbench 0.3.x (only needs torch>=2.5.1). Portable on
+# purpose (participants install whatever suits their machine); the docker
+# image pins the CUDA wheel channel instead (tools/Dockerfile TORCH_CHANNEL).
+torch
+# Data stack for the real tasks (Simulated needs none of these). The four
+# neuroai packages release in lockstep (neuralbench only pins its siblings to
+# ~=0.4.0), so all four are pinned exactly for a reproducible image.
+neuralset==0.4.0
+neuralfetch==0.4.0
+neuraltrain==0.4.0
+neuralbench==0.4.0
+exca==0.5.29
+moabb
+mne
+# Used by the EEGNet baselines / many torch submissions:
+braindecode
+# NeuralFetch downloads the PROTEUS and Muse releases from NEMAR through it,
+# importing it on demand (the neuroai packages do not depend on it).
+nemar-py>=0.3.1
