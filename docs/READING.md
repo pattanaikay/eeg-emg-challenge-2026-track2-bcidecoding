@@ -1,5 +1,7 @@
 # Reading route: one question per source
 
+**Detailed companion review (21 October 2026):** [Browsable HTML](LITERATURE_REVIEW.html) · [Markdown](LITERATURE_REVIEW.md). It reviews every scientific paper and both company reports below, with verified results, evidence limits, comparison tables, and proposed experiments for retention and harmful-drift prediction.
+
 Start with the contract, then EEG signal/representation basics, then drift and forgetting. Read the abstract, main figure, assumptions and limitations first. Write what transfers to our setting and what still needs a new experiment.
 
 ## Competition and implementation

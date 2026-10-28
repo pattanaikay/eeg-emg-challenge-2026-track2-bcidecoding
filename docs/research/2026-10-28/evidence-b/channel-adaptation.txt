@@ -1,0 +1,655 @@
+PAGE 1
+Channel Adaptation for EEG Foundation Models:
+A Systematic Benchmark Across Architectures, Tasks, and Training
+Regimes
+Kuntal Kokate 1, Bruno Aristimunha 1,2, Dung Truong 1, Arnaud Delorme 1,3
+Abstract— Scaling EEG foundation models requires pooling
+data across heterogeneous electrode montages, a prerequi-
+site both for larger pretraining corpora and for downstream
+deployment. We present the first systematic comparison of
+four channel adaptation methods (Conv1d projection, spherical
+spline interpolation (SSI), source-space decomposition, and
+Riemannian re-centering) across five pretrained EEG founda-
+tion models (5M–157M parameters), five downstream tasks,
+and two training regimes with 10–15 random seeds each. We
+find that rigid-montage models (BENDR, Neuro-GPT) require
+external adaptation, while flexible models (EEGPT, CBraMod)
+match or exceed it natively when fine-tuned but benefit from
+external methods under frozen-encoder deployment. A probe-
+SFT asymmetry exists: external adaptation can cause severe
+negative transfer during fine-tuning of flexible models. The
+optimal method is architecture-dependent (Conv1d for BENDR,
+SSI/Riemannian for Neuro-GPT, source-space decomposition
+for depression detection), and 5M-parameter CBraMod outper-
+forms models up to 31 × larger on 4/5 datasets, consistent with
+independent findings that compact EEG-specific architectures
+can match larger models.
+I. INTRODUCTION
+A first generation of self-supervised electroencephalogra-
+phy (EEG) foundation models, including BENDR [1], Neuro-
+GPT [2], EEGPT [3], LUNA [4], and CBraMod [5], has
+shown transfer across downstream tasks [6]. These models
+are pretrained on specific electrode montages (e.g., 19-
+channel 10–20 system or proprietary configurations), and
+their behavior under realistic montage variation, where down-
+stream datasets routinely use 22, 64, or 21 channels, remains
+understudied.
+How this variability in channel counts and electrode lay-
+outs is handled is a critical design choice in the pipeline: the
+adaptation layer that maps signals from an arbitrary source
+montage to the model’s expected input determines how well
+pretrained representations transfer. Four families of channel
+adaptation have emerged in the literature:
+• Learned projection (Conv1d) : a trainable 1 × 1 con-
+volution maps Csource to Ctarget channels, trained jointly
+with the downstream task [1]; the channel-mixing in-
+ductive bias is borrowed from computer vision.
+1Swartz Center for Computational Neuroscience, Institute for Neu-
+ral Computation, University of California San Diego, La Jolla,
+CA 92093, USA {kukokate, baristimunha, dutruong,
+adelorme}@ucsd.edu
+2Yneuro, Paris, France
+3Centre de Recherche Cerveau et Cognition, CNRS, Université Paul
+Sabatier, Toulouse, France
+• Spatial interpolation (SSI) : an EEG-specific, physics-
+based reconstruction of target channels from source
+channels using 3D electrode positions and spherical
+splines [7].
+• Source-space decomposition (OmnEEG) : signals are
+projected into a topology-agnostic native representation
+of 25 spherical harmonic coeﬀicients [8] via the Om-
+nEEG tokenizer [9], bypassing channel-level mapping.
+• Geometric domain adaptation (Riemannian re-
+centering): per-subject geometric-mean whitening on
+the SPD manifold aligns source and target distribu-
+tions [10].
+Despite their widespread use and community benchmarks
+for cross-task and cross-subject generalization [11], no sys-
+tematic comparison of channel adaptation methods exists
+across models and tasks. Prior work typically evaluates a
+single adaptation method on a single model. We address this
+gap with a controlled systematic cross-benchmark spanning
+five models, five adaptation methods (including Native/no
+external adaptation), five common and largest downstream
+datasets across four task domains, and two training regimes
+(probe and supervised fine-tuning, SFT), totaling over 200
+experimental conditions with strong variability control, fol-
+lowing the benchmarking methodology of [12].
+Our contributions are: (1) the first systematic cross-model
+comparison of channel adaptation methods across five EEG
+foundation models and five diverse downstream tasks; (2) a
+rigid/flexible dichotomy showing that rigid-montage models
+require adaptation while flexible models handle arbitrary
+channels natively; and (3) evidence that optimal adaptation is
+architecture-dependent, with a probe-SFT asymmetry where
+external methods can cause negative transfer during fine-
+tuning.
+II. RELATED WORK
+A. EEG Foundation Models
+Recent EEG foundation models use self-supervised learn-
+ing (SSL) pretraining on large unlabeled EEG corpora.
+BENDR [1] adapts wav2vec 2.0 to EEG, pretraining a 157M-
+parameter convolutional encoder on the Temple University
+Hospital (TUH) EEG corpus with a fixed 20-channel in-
+put. Neuro-GPT [2] combines a convolutional EEG en-
+coder with a GPT-2 language model backbone, pretrained
+on TUH with 79.5M parameters and a fixed 22-channel
+architecture. EEGPT [3] uses dual self-supervised learning
+arXiv:2604.23091v1  [cs.LG]  25 Apr 2026
+
+PAGE 2
+(spatio-temporal alignment and masked reconstruction) with
+a 25.3M-parameter patch-based transformer that handles
+variable channel counts via built-in projection. CBraMod [5]
+uses a criss-cross transformer that separates spatial and
+temporal attention, pretrained on the TUH EEG Corpus
+(TUEG) with masked patch reconstruction at 5M parame-
+ters. LUNA [4] uses cross-attention with learned queries to
+process arbitrary channel counts in a topology-agnostic way
+at 7.1M parameters.
+B. Channel Adaptation for EEG
+Prior work populates the four families introduced above.
+Learned projection trains a channel-mixing linear map
+jointly with the downstream task, as in BENDR’s Conv1d
+layer [1] and EEGPT’s channel projection module [3].
+Spatial interpolation reconstructs target channels from
+physically-grounded reference electrodes; spherical spline
+interpolation [7] uses 3D electrode positions, while field
+interpolation uses forward head models [10]. Source-space
+decomposition projects EEG onto a topology-agnostic native
+basis: spherical harmonic decomposition of scalp EEG was
+introduced by Wingeier et al. [8] on top of Y ao’s spherical
+head-model standardization [13], with the OmnEEG tok-
+enizer [9] providing a practical implementation; its empirical
+effectiveness relative to simpler methods has not been es-
+tablished. Geometric domain adaptation aligns per-subject
+distributions on the SPD manifold, as in Riemannian re-
+centering [10], [14].
+Orthogonal to these four families, architectural solu-
+tions build channel flexibility directly into the pretrained
+model: LUNA ’s cross-attention [4] and REVE’s 4D po-
+sitional encoding [15] accept arbitrary montages natively.
+More broadly, brain-computer interface (BCI) transfer learn-
+ing [16] typically assumes fixed electrode montages, leaving
+the channel adaptation component understudied.
+III. METHODS
+A. A Unified View of Channel Adaptation
+All four families considered here apply a linear map
+along the channel axis to transform the source signal Xs ∈
+RCs×T into the representation Xt ∈ RCt×T expected by the
+foundation model:
+Xt = M Xs, (1)
+where M ∈ RCt×Cs is the adaptation matrix . The methods
+differ only in how M is constructed.
+1) Learned projection (Conv1d) : M is a trainable 1 × 1
+convolution (with optional bias), learned end-to-end with the
+downstream task. Its inductive bias is the simplest of the four:
+no electrode positions are needed, and the only prior is that
+channels mix linearly.
+2) Spatial interpolation (SSI) : M is a fixed interpolation
+matrix computed analytically from 3D electrode coordi-
+nates using Legendre-polynomial spherical splines [7], via
+MNE-Python. We target the 19-channel 10–20 montage.
+For BENDR (which expects 20 channels, including a ref-
+erence), a small learned 1 × 1 bridge is composed with
+TABLE I
+EEG FOUNDATION MODELS EVALUATED
+Model Params Architecture Ch. sfreq
+BENDR [1] 157M † Conv Encoder 20 256 Hz
+Neuro-GPT [2] 79.5M Conv + GPT-2 22 256 Hz
+EEGPT [3] 25.3M Patch Transformer Any 256 Hz
+LUNA [4] 7.1M Cross-Attention Any 256 Hz
+CBraMod [5] 5.0M Criss-Cross Trans. Any 200 Hz
+†Total; encoder-only used (contextualizer bypassed).
+M; the same bridge is also composed with the Riemannian
+and OmnEEG matrices for BENDR. The “Conv1d” row
+in Fig. 1 is therefore a direct learned mapping, whereas
+SSI/Riemannian/OmnEEG rows on BENDR are hybrid (pre-
+processing + learned bridge).
+3) Source-space decomposition (OmnEEG) : M ∈
+R25×Cs is a fixed basis matrix whose rows evaluate the
+real spherical harmonics Yℓm(θi, ϕi) at the source electrode
+positions, for orders ℓ ≤ 4 [8], [9]. The output is a topology-
+agnostic 25-coeﬀicient representation that does not depend
+on Cs.
+4) Geometric domain adaptation (Riemannian re-
+centering): Applied after SSI, M = ¯C−1/2
+j is a per-
+subject whitening on the SPD manifold, where ¯Cj is the
+geometric mean of subject j’s covariance matrices (with
+Ledoit-Wolf shrinkage) [10], [14]. The full pipeline therefore
+applies ¯C−1/2
+j G to Xs, aligning per-subject distributions
+while preserving task-relevant structure.
+B. Foundation Models
+Table I summarizes the five models evaluated, spanning
+5M–157M parameters with diverse architectures and chan-
+nel handling strategies. Models were selected to represent
+the major architectural approaches for EEG (convolutional
+encoder, GPT backbone, patch transformer, cross-attention,
+criss-cross transformer), both rigid and flexible channel han-
+dling, and a range of parameter scales. Pretrained weights
+are loaded from HuggingFace Hub: via braindecode [17]
+for BENDR, EEGPT, LUNA, and CBraMod, and from the
+authors’ release for Neuro-GPT.
+C. Training Regimes
+We evaluate two training regimes:
+• Probe (frozen encoder) : Only the classification head is
+trained while all pretrained parameters remain frozen.
+This tests the quality of pretrained representations with
+the adaptation method.
+• SFT (supervised fine-tuning) : All model parameters
+are unfrozen and trained end-to-end with a lower learn-
+ing rate (lr = 10 −5 vs. 5 × 10−4 for probe).
+D. Datasets
+The five datasets (Table II) span four task domains—
+motor imagery, clinical event detection, emotion recognition,
+and resting-state depression screening—with diverse channel
+counts and subject populations.
+
+PAGE 3
+TABLE II
+DOWNSTREAM EVALUATION DATASETS
+Dataset Classes Ch. Samples Chance Task
+BCIC2A 4 22 5,184 25.0% Motor Im.
+PhysioNet 4 64 9,838 25.0% Motor Im.
+TUEV 6 21 1,047 16.7% Event Det.
+FACED 9 26 19,217 11.1% Emotion
+MDD 2 19 3,857 50.0% Depression
+The first, BCI Competition IV 2a (BCIC2A) [18], consists
+of 9 subjects recorded over two sessions with four motor-
+imagery classes (left hand, right hand, both feet, tongue)
+on 22 EEG channels; we split subjects 1–3/4–6/7–9 for
+train/val/test. The second, PhysioNet Motor Imagery [19],
+comprises 109 subjects performing four motor-imagery tasks
+(left/right hand, both fists, both feet) on 64 EEG chan-
+nels, split 1–70/71–89/90–109. The third, TUH EEG Events
+(TUEV) v2.0.1 [20], is a clinical corpus with six anno-
+tated event types (epileptiform, slowing, artifact, and back-
+ground categories) on 21 channels, using the oﬀicial 812/235
+train/evaluation split. The fourth, FACED [21], covers 123
+subjects viewing emotion-eliciting video stimuli on 26 EEG
+channels with nine affective classes in 10-second windows,
+split 0–79/80–99/100–122. Finally, MDD Mumtaz [22] pro-
+vides a 2-class depression screening task (MDD vs. healthy
+controls) from 64 subjects recorded on 19 channels during
+eyes-closed resting state (5-second windows), with prede-
+fined subject splits.
+E. Experimental Setup
+All experiments use AdamW optimizer with cosine an-
+nealing and warmup (5 epochs). Training runs for up to
+50 epochs with early stopping (patience=10, monitoring
+validation loss). Normalization is model-specific to match
+pretraining: BENDR and LUNA use min-max scaling to
+[−1, 1]; EEGPT uses channel-wise z-score; CBraMod uses
+µV/100 scaling. Each model’s data is resampled to its
+pretrained frequency (Table I).
+For probe mode, only the classification head (and Conv1d
+projection, if applicable) is trained. For SFT, all parame-
+ters are unfrozen. We report macro-averaged test accuracy
+(equivalent to balanced accuracy; mean ± std over 10–15
+random seeds) on held-out test splits. A single learning rate
+per regime was used for all models; per-model tuning may
+yield further gains. Pairwise significance was assessed via
+Wilcoxon signed-rank tests on seed-level accuracies with
+Benjamini-Hochberg (BH) correction for 50 simultaneous
+tests (false discovery rate, FDR < 0.05); 20 of 50 best-vs-
+runner-up comparisons survive correction, all with |d| ≥ 0.5
+(Cohen’s d; 18 with |d| ≥ 0.8). A Friedman test across
+methods confirms significant overall differences ( χ2 > 100,
+p ≪ 0.001 for both probe and SFT). However, in 41% of
+conditions, multiple methods perform within 1pp of the best,
+indicating that methods are often interchangeable within a
+given architecture-regime pair.
+IV . RESULTS
+A. Main Results
+Fig. 1 presents per-seed balanced accuracy for all model-
+method-regime combinations. Bold y-labels mark the best
+adapter per backbone per panel. While a Friedman test
+confirms significant overall method differences ( p ≪ 0.001),
+only 20 of 50 pairwise best-vs-runner-up comparisons sur-
+vive BH correction, and 41% of all method-condition pairs
+fall within 1pp of the best, indicating that methods are often
+interchangeable within a given architecture-regime pair.
+B. Key Findings
+1) Channel adaptation is essential for rigid-montage mod-
+els: BENDR and Neuro-GPT, which expect fixed channel
+layouts (20 and 22 channels respectively), require external
+adaptation for cross-montage transfer. Without adaptation,
+BENDR cannot process inputs with mismatched channel
+counts: its first convolutional layer requires exactly 20 chan-
+nels and errors on any other input width. Conv1d SFT
+lifts BENDR to 34.6% on BCIC2A and 53.1% on Phy-
+sioNet. Neuro-GPT benefits most from Riemannian align-
+ment, achieving 54.5% on PhysioNet (vs. 51.5% Conv1d),
+suggesting that physics-informed interpolation followed by
+geometric re-centering better preserves the spatial structure
+expected by its spatial convolution kernel.
+2) Flexible models match or exceed external adaptation
+natively: EEGPT, LUNA, and CBraMod handle arbitrary
+channel counts through built-in mechanisms: a channel em-
+bedding codex with internal Conv1d projection (EEGPT),
+cross-attention with learned queries (LUNA), and asym-
+metric conditional positional encoding (ACPE, CBraMod).
+EEGPT achieves 53.6% natively on PhysioNet and produces
+seed-level identical results to external Conv1d on BCIC2A,
+PhysioNet, and TUEV; its internal conv1d_constraint
+clearly subsumes external Conv1d. The methods diverge
+only on FACED and MDD, where channel counts differ
+from EEGPT’s pretraining montage. CBraMod native probe
+reaches 44.7% on PhysioNet, 12pp above Conv1d probe.
+Its ACPE preserves more spatial information than a learned
+linear mapping. SSI marginally outperforms CBraMod native
+on PhysioNet SFT (61.0% vs. 59.8%), while native is compa-
+rable on BCIC2A (35.4% vs. 35.2%) and slightly ahead on
+TUEV (44.0% vs. 42.6%). CBraMod native SFT achieves
+87.6% on MDD, the highest accuracy in the entire study.
+This likely reflects two factors: MDD’s 19-channel montage
+closely matches the 10–20 system used in CBraMod’s TUEG
+pretraining, and binary resting-state classification aligns well
+with the pretrained representations.
+3) Source-space decomposition excels on clinical de-
+pression detection : Source-space decomposition gives the
+strongest MDD results for topology-agnostic models: LUNA
+probe reaches 81.9% (+16pp over native) and CBraMod
+reaches 81.7% SFT. For rigid models, it remains at chance
+on motor imagery and emotion but is functional on MDD
+(77.1% BENDR, 68.9% Neuro-GPT) and TUEV (28.7%,
+22.8% vs. 16.7% chance). We discuss the architectural rea-
+sons in Sec. V-C.
+
+PAGE 4
+0 10 20 30 40 50 60 70 80 90 100
+Balanced Accuracy  (%)
+Conv1d
+SSI
+Riemannian
+Native
+OmnEEG
+Riemannian
+SSI
+Conv1d
+OmnEEG
+Native
+Conv1d
+OmnEEG
+SSI
+Riemannian
+SSI
+Riemannian
+OmnEEG
+Conv1d
+Native
+Native
+Conv1d
+SSI
+Riemannian
+OmnEEG
+BENDR NeuroGPT EEGPT LUNA CBraMod
+Linear Probe
+0 10 20 30 40 50 60 70 80 90 100
+Balanced Accuracy  (%)
+Full Fine-Tuning (SFT)
+Fig. 1. Per-seed balanced accuracy across all five foundation models (rows, grouped top-to-bottom from 157 M to 5 M parameters) and five adaptation
+methods (within-group rows; colored by method), split by training regime (left: probe; right: full SFT). Dot key: • BCI-IV-2a • PhysioNet-MI • TUEV
+• FACED • MDD (Mumtaz 2016) | per-dataset mean. Bold y-labels highlight the best adapter per backbone-regime pair; dashes denote inapplicable
+cells.
+4) Riemannian re-centering shows task- and regime-
+dependent benefits : Riemannian alignment provides notable
+gains for CBraMod probe on TUEV (39.4% vs. 26.9%
+native, +12.5pp) and BCIC2A (33.2% vs. 30.6% native),
+and for Neuro-GPT on PhysioNet (54.5% SFT). However,
+Riemannian SFT can catastrophically fail: CBraMod on
+TUEV collapses from 39.4% probe to 16.7% SFT (exact
+chance).
+C. Training Regime Interaction
+SFT consistently outperforms probe for rigid-montage
+models: BENDR Conv1d improves from 25.0% to 34.6%
+on BCIC2A, and Neuro-GPT Riemannian from 32.5% to
+34.3%. For flexible models, EEGPT probe often outperforms
+SFT with external adaptation (Conv1d probe 53.6% vs. SFT
+34.0% on PhysioNet; 35.2% vs. 19.5% on TUEV). Neuro-
+GPT shows negative transfer on MDD with SSI/Riemannian
+(probe 80.0% → SFT 74.4%). LUNA is the exception:
+Riemannian SFT achieves 48.7% on PhysioNet (+9.3pp over
+native SFT). We analyze the mechanisms behind this probe-
+SFT asymmetry in Sec. V-B.
+D. Model Scale vs. Architecture
+Table III shows that model scale does not predict down-
+stream performance. The 5M-parameter CBraMod achieves
+the best results on four of five datasets: BCIC2A (35.4%),
+PhysioNet (61.0%), TUEV (44.0%), and MDD (87.6% via
+native SFT, the study’s overall highest accuracy). EEGPT
+leads on FACED (25.8% via Conv1d probe), a task where
+all models struggle. Our five models confound architecture,
+TABLE III
+BEST TEST ACCURACY (%) PER MODEL. SUPERSCRIPTS: METHOD
+(C=CONV1D, S=SSI, O=OMNEEG, R=RIEMANNIAN, N=NATIVE) / REGIME
+(P=PROBE, S=SFT). †TIE: SSI AND RIEMANNIAN PROBE BOTH 80.0 ±1.5.
+Model BCIC Phys. TUEV FACED MDD
+BENDR 34.6 C/s 53.1C/s 30.5S/s 19.4C/s 84.0R/s
+Neuro-GPT 34.3 R/s 54.5R/s 34.4C/p 24.6C/s 80.0R/p †
+EEGPT 29.8 N/p 53.6N/p 35.2N/p 25.8C/p 83.6N/s
+LUNA 28.9O/p 48.7R/s 36.5S/s 17.0S/s 81.9O/p
+CBraMod 35.4N/s 61.0S/s 44.0N/s 17.5C/s 87.6N/s
+pretraining data (CBraMod uses TUEG, the largest corpus),
+training objective (contrastive vs. masked reconstruction),
+and sampling rate (200–256 Hz). CBraMod’s advantage is
+consistent with independent findings [23] that compact EEG-
+specific architectures can match much larger models, though
+the relative contributions of its criss-cross inductive bias,
+TUEG pretraining data, and masked patch objective cannot
+be isolated in our design. FACED remains the hardest task
+(best 25.8%, ≈ 2.3× chance), while MDD shows the highest
+absolute accuracies, with three models exceeding 83%.
+EEGPT’s channel embedding codex provides task-
+specific spatial representations: on MDD, EEGPT
+native (78.9%/83.6% probe/SFT) outperforms Conv1d
+(64.6%/67.5%) by +14.3pp/+16.1pp. This suggests the
+codex encodes clinically relevant spatial relationships (e.g.,
+frontal asymmetry biomarkers for depression) that a generic
+learned projection cannot capture.
+
+PAGE 5
+V . DISCUSSION
+A. Why Optimal Adaptation Differs by Architecture
+Our results reveal that the optimal adaptation method
+is determined by the specific architectural component that
+handles channel input, not by model size or pretraining data.
+BENDR’s first Conv1d layer treats channels as the input
+dimension of a 1D convolution ( in_channels=20) and
+mixes all channels into 512 feature maps. A learned Conv1d
+bridge can directly optimize the mapping into this pretrained
+spatial feature space, which is why it beats physics-based
+methods here. SSI produces physically-correct signals but
+suboptimal activations for the pretrained filters.
+Neuro-GPT’s spatial convolution applies a (C=22, 1)
+kernel that learned physically meaningful spatial patterns
+from 10–20 data. SSI/Riemannian preserves these relation-
+ships through Legendre polynomial interpolation and per-
+subject covariance whitening, which accounts for the Rie-
+mannian advantage on PhysioNet. On FACED and MDD,
+Conv1d outperforms Riemannian; learned projections appear
+to provide more flexibility for non-spatial tasks.
+EEGPT’s channel embedding codex assigns learnable
+spatial embeddings to each electrode name, with an internal
+conv1d_constraint that subsumes external Conv1d.
+This explains both the identical results on matched datasets
+and the SFT degradation through conflicting dual-projection
+gradients. The codex encodes electrode-specific spatial infor-
+mation relevant to clinical biomarkers, as evidenced by the
++14.3pp advantage over Conv1d on MDD probe.
+LUNA ’s cross-attention queries compress C input chan-
+nels into Q = 4 learned queries, which forms an architecture-
+agnostic bottleneck. Unlike EEGPT and CBraMod, where
+external adaptation creates competing spatial representations,
+LUNA ’s queries dynamically re-attend to adapted inputs
+without conflicting gradients. This is why external methods
+help in both probe and SFT.
+CBraMod’s ACPE generates positional information dy-
+namically from input content via depthwise 2D convolution,
+without fixed channel identity assumptions. This content-
+adaptive encoding preserves more spatial information than
+learned linear mappings, which is why native handling works
+well.
+B. The Probe-SFT Asymmetry
+Overall, 28 of 113 paired probe-SFT experiments (24.8%)
+show SFT accuracy more than 1pp below probe. The mech-
+anism is that external adaptation layers create conflicting
+optimization targets with the model’s internal channel han-
+dling during fine-tuning: in probe mode, the frozen encoder
+constrains the adaptation layer to optimize within the pre-
+trained representation space; in SFT, both the adapter and
+encoder co-adapt destructively. The CBraMod Riemannian
+collapse on TUEV (39.4% probe → 16.7% SFT) likely
+reflects covariance whitening destabilizing the ACPE during
+backpropagation. EEGPT is systematically the most affected
+among flexible models, which points to its dual SSL pre-
+training objective as particularly susceptible to fine-tuning
+destabilization. LUNA is the exception: its cross-attention
+bottleneck (C →Q=4) decouples adaptation from internal
+representations and stays stable under dual optimization in
+both regimes.
+C. Source-space decomposition : Architecture-Specific,
+Task-Specific
+Source-space decomposition ( ℓ ≤ 4, 25 coeﬀicients) pre-
+serves global patterns (hemispheric asymmetries, anterior-
+posterior gradients) but destroys focal activity ( <4 cm). It
+succeeds on MDD, where depression biomarkers are broad
+spectral patterns [22], and fails on motor imagery which
+needs focal sensorimotor features. Its partial success with
+rigid models on MDD and TUEV (Sec. IV-B) suggests global
+patterns survive even mismatched pretrained filters when the
+task does not require focal information: a domain-specific
+tool rather than a general-purpose adaptation. REVE’s 4D
+positional encoding [15] builds montage flexibility into the
+architecture during pretraining, whereas our methods retrofit
+pretrained models.
+D. Practical Guidelines
+Decision framework: (1) If deploying with a frozen en-
+coder, use external adaptation: Conv1d for BENDR/EEGPT,
+Riemannian for Neuro-GPT/CBraMod. (2) If fine-tuning a
+rigid model, Conv1d for BENDR and SSI/Riemannian for
+Neuro-GPT. (3) If fine-tuning a flexible model, use native
+handling: external methods add complexity without benefit
+and risk negative transfer (except LUNA, which benefits from
+SSI/Riemannian SFT).
+Compute trade-offs: SSI is computed offline (zero train-
+ing overhead), Conv1d adds a small learnable layer, Rieman-
+nian requires per-subject covariance estimation ( O(C 2T )),
+and source-space decomposition needs electrode positions
+and a harmonic projection. When Conv1d and SSI yield
+similar accuracy, SSI is preferable for its simplicity and
+reproducibility.
+For clinical screening: CBraMod native SFT achieves
+the study’s overall best of 87.6% on MDD; source-space
+decomposition also helps on MDD (LUNA 81.9%, CBraMod
+81.7%) but not on motor imagery or emotion.
+Limitations. We evaluate only probe and full SFT;
+parameter-eﬀicient methods (LoRA, DoRA) and linear-
+probe-then-fine-tune (LP-FT) may interact differently with
+channel adaptation and could mitigate the negative trans-
+fer we observe. BENDR uses the convolutional encoder
+only, following the original evaluation protocol [1]. FACED
+emotion recognition remains largely unsolved (best 25.8%,
+≈ 2.3× the 11.1% chance level): degenerate models collapse
+to predicting a single class, and zero variance across all 15
+seeds (e.g., CBraMod OmnEEG: 12.500 ± 0.000) indicates
+identical prediction patterns, with the 12.5% accuracy re-
+flecting a slight class imbalance in the FACED test split
+rather than uniform prediction across classes, and all foun-
+dation models underperform specialized emotion recognition
+methods by ∼40pp [21], which is consistent with resting-
+state/motor imagery pretraining failing to transfer to affec-
+
+PAGE 6
+tive stimuli. Several experiments exhibit high variance (std
+> 8pp, e.g., BENDR SSI/Riemannian SFT on PhysioNet,
+EEGPT Conv1d on MDD), pointing to seed-dependent con-
+vergence failures where the reported mean may understate
+the method’s potential or overstate its reliability. We use a
+single learning rate per training regime across all models;
+per-model tuning may yield further gains.
+Our five models also confound multiple factors beyond
+architecture: pretraining corpus size (CBraMod uses TUEG,
+the largest; others use smaller TUH subsets), sampling rate
+(200 or 256 Hz, where resampling introduces variable in-
+formation loss), normalization scheme (min-max, z-score,
+µV/100), and window lengths that differ by dataset (e.g., 10s
+for FACED, 5s for MDD). The rigid-vs-flexible dichotomy
+and probe-SFT asymmetry are robust to these confounds
+(they follow from architectural properties), but CBraMod’s
+dominance and specific accuracy rankings may partly reflect
+pretraining data advantages rather than architectural superi-
+ority.
+VI. CONCLUSIONS
+We presented the first systematic comparison of chan-
+nel adaptation methods for EEG foundation models across
+five models, five datasets, and two training regimes. Rigid-
+montage models require architecture-specific adaptation
+(Conv1d for BENDR, SSI/Riemannian for Neuro-GPT),
+while flexible models match or exceed external methods
+natively when fine-tuned but benefit from them with frozen
+encoders. A probe-SFT asymmetry exists where external
+methods cause negative transfer in 24.8% of SFT exper-
+iments for flexible models. Adaptation methods are often
+interchangeable: in 41% of conditions, multiple methods
+perform within 1pp of the best. The rigid-vs-flexible di-
+chotomy and probe-vs-SFT regime are therefore the primary
+deployment decisions, rather than method choice within a
+regime. CBraMod (5M) achieves the best results on 4/5
+datasets, consistent with independent findings [23], though
+our design confounds architecture with pretraining data and
+objectives.
+ACKNOWLEDGMENT
+This work was supported by the NSF (2423943,
+#1928224) and the NAIRR program (NAIRR250045), and
+used the San Diego Supercomputer Center Expanse cluster
+via ACCESS allocation IBN140002 on the Neuroscience
+Gateway [24], [25].
+REFERENCES
+[1] D. Kostas, S. Aroca-Ouellette, and F. Rudzicz, “BENDR: Using trans-
+formers and a contrastive self-supervised learning task to learn from
+massive amounts of EEG data,” Frontiers in Human Neuroscience ,
+vol. 15, p. 653659, 2021.
+[2] W . Cui, W. Jeong, P . Thölke, T. Medani, K. Jerbi, A. A. Joshi, and
+R. M. Leahy, “Neuro-GPT: Towards a foundation model for EEG,” in
+Proc. IEEE ISBI , Athens, Greece, 2024.
+[3] G. Wang, W. Liu, Y . He, C. Xu, L. Ma, and H. Li, “EEGPT: Pretrained
+transformer for universal and reliable representation of EEG signals,”
+in Proc. NeurIPS, vol. 37, 2024, pp. 39 249–39 280.
+[4] B. Döner, T. M. Ingolfsson, L. Benini, and Y . Li, “LUNA: Eﬀicient
+and topology-agnostic foundation model for EEG signal analysis,” in
+Proc. NeurIPS, 2025.
+[5] J. Wang, S. Zhao, Z. Luo, Y . Zhou, H. Jiang, S. Li, T. Li, and G. Pan,
+“CBraMod: A criss-cross brain foundation model for EEG decoding,”
+in Proc. ICLR , 2025.
+[6] H. Banville, O. Chehab, A. Hyvärinen, D.-A. Engemann, and A. Gram-
+fort, “Uncovering the structure of clinical EEG signals with self-
+supervised learning,” Journal of Neural Engineering , vol. 18, no. 4,
+p. 046020, 2021.
+[7] F. Perrin, J. Pernier, O. Bertrand, and J. F. Echallier, “Spherical splines
+for scalp potential and current density mapping,” Electroencephalogra-
+phy and Clinical Neurophysiology , vol. 72, no. 2, pp. 184–187, 1989.
+[8] B. M. Wingeier, P . L. Nunez, and R. B. Silberstein, “Spherical
+harmonic decomposition applied to spatial-temporal analysis of human
+high-density electroencephalogram,” Physical Review E, vol. 64, no. 5,
+p. 051916, 2001.
+[9] M. Ramezanian-Panahi and G. Dumas, “OmnEEG: Simple EEG
+tokenizer with PyTorch datasets,” 2025. [Online]. Available: https:
+//github.com/brain2vec/OmnEEG
+[10] A. Mellot, A. Collas, S. Chevallier, D. Engemann, and A. Gramfort,
+“Physics-informed and unsupervised Riemannian domain adaptation
+for machine learning on heterogeneous EEG datasets,” in Proc. EU-
+SIPCO, 2024.
+[11] B. Aristimunha et al., “EEG foundation challenge: From cross-task to
+cross-subject EEG decoding,” arXiv preprint arXiv:2506.19141, 2025.
+[12] D. Borra, F. Paissan, and M. Ravanelli, “SpeechBrain-MOABB: An
+open-source Python library for benchmarking deep neural networks
+applied to EEG signals,” Computers in Biology and Medicine , vol.
+182, p. 109097, 2024.
+[13] D. Y ao, “A method to standardize a reference of scalp EEG recordings
+to a point at infinity,” Physiological Measurement, vol. 22, no. 4, pp.
+693–711, 2001.
+[14] A. Barachant, S. Bonnet, M. Congedo, and C. Jutten, “Multiclass
+brain-computer interface classification by Riemannian geometry,”
+IEEE Transactions on Biomedical Engineering , vol. 59, no. 4, pp.
+920–928, 2012.
+[15] Y . El Ouahidi, J. Lys, P . Thölke, N. Farrugia, B. Pasdeloup, V . Gripon,
+K. Jerbi, and G. Lioi, “REVE: A foundation model for EEG—adapting
+to any setup with large-scale pretraining on 25,000 subjects,” arXiv
+preprint arXiv:2510.21585, 2025.
+[16] C. Sartzetaki, P . Antoniadis, N. Antonopoulos, I. Gkinis, A. Krasoulis,
+S. Perdikis, and V . Pitsikalis, “Beyond within-subject performance: A
+multi-dataset study of fine-tuning in the EEG domain,” in Proc. IEEE
+SMC, 2023.
+[17] B. Aristimunha, P . Guetschel, M. Wimpff, L. Gemein, C. Rommel,
+H. Banville, M. Sliwowski, D. Wilson, S. Brandt, T. Gnassounou,
+J. Paillard, B. Junqueira Lopes, S. Sedlar, T. Moreau, S. Chevallier,
+A. Gramfort, and R. T. Schirrmeister, “Braindecode: toolbox for de-
+coding raw electrophysiological brain data with deep learning models,”
+2025.
+[18] C. Brunner, R. Leeb, G. Müller-Putz, A. Schlögl, and G. Pfurtscheller,
+“BCI competition 2008 – graz data set a,” Institute for Knowledge
+Discovery, Graz University of Technology, Tech. Rep., 2008.
+[19] G. Schalk, D. J. McFarland, T. Hinterberger, N. Birbaumer, and J. R.
+Wolpaw, “BCI2000: A general-purpose brain-computer interface (BCI)
+system,” IEEE Transactions on Biomedical Engineering, vol. 51, no. 6,
+pp. 1034–1043, 2004.
+[20] I. Obeid and J. Picone, “The Temple University Hospital EEG data
+corpus,” Frontiers in Neuroscience , vol. 10, p. 196, 2016.
+[21] J. Chen, X. Wang, C. Huang, X. Hu, X. Shen, and D. Zhang, “A
+large finer-grained affective computing EEG dataset,” Scientific Data,
+vol. 10, p. 740, 2023.
+[22] W. Mumtaz, S. S. A. Ali, M. A. M. Y asin, and A. S. Malik, “A machine
+learning framework involving EEG-based functional connectivity to
+diagnose major depressive disorder (MDD),” Medical & Biological
+Engineering & Computing , vol. 56, no. 2, pp. 233–246, 2018.
+[23] L. Y ang, Q. Sun, A. Li, and M. M. Van Hulle, “Are EEG foundation
+models worth it? Comparative evaluation with traditional decoders in
+diverse BCI tasks,” in Proc. ICLR , 2026.
+[24] S. Sivagnanam et al. , “Introducing the Neuroscience Gateway,” in
+IWSG, 2013.
+[25] ——, “Early experiences in developing and managing the Neuro-
+science Gateway,” Concurrency Comput. Pract. Exper. , vol. 27, no. 2,
+pp. 473–488, 2015.

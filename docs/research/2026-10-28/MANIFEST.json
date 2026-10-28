@@ -1,0 +1,298 @@
+{
+  "research_date": "2026-10-28",
+  "timezone": "Asia/Kolkata",
+  "kind": "literature review and static evidence; no experiments",
+  "file_count": 58,
+  "files": [
+    {
+      "path": "agent-a-adaptation.md",
+      "bytes": 10032,
+      "sha256": "620e689e7da4fed8e77d4a495334fe6722f37321cc2ebbe6ff4c58662b89ae84"
+    },
+    {
+      "path": "agent-b-geometry.md",
+      "bytes": 11601,
+      "sha256": "fefbe6fa25c977dfe7272e72d35215ad15698f33f132fc377a7254dca64d1e64"
+    },
+    {
+      "path": "agent-c-masking.md",
+      "bytes": 10078,
+      "sha256": "eabe8aa5f105bd294eecf1d600c263d7a45e8d8590704d29bab29ab5644a3867"
+    },
+    {
+      "path": "agent-d-dynamics.md",
+      "bytes": 9339,
+      "sha256": "fe8e712fe500afb53a34234fb7924a9185ee47fe4513f5ebfb3b2d92a339e707"
+    },
+    {
+      "path": "agent-e-augmentation.md",
+      "bytes": 10048,
+      "sha256": "5dac886ff7f390a65a548d83752febbe41924ba63238f7fe1324e47d4f1bef8b"
+    },
+    {
+      "path": "btta-BTTA_DG.py",
+      "bytes": 13714,
+      "sha256": "ce03a1d47d497bc832cabf9b8e1baf27f380c036e1b87c1ab479c8e149931af5"
+    },
+    {
+      "path": "btta-dg-primary.pdf",
+      "bytes": 8587154,
+      "sha256": "ad76275c71c12ce661b21656b509a2e7a62cf9d9388951f42632d11a19d84f64"
+    },
+    {
+      "path": "btta-dg-primary.txt",
+      "bytes": 105605,
+      "sha256": "65fd54097578a3a3128a5bbb4dff7069870514cae9764991c6f695945f2caafa"
+    },
+    {
+      "path": "btta-download_data.py",
+      "bytes": 3441,
+      "sha256": "8d0ec55b4b33e485724dc519c860dfe1686b91e367fda16be2061edfb41be38e"
+    },
+    {
+      "path": "btta-page-04.png",
+      "bytes": 334391,
+      "sha256": "1f8d2a93ed5384565941aa4b02d29f6fbd76396aa2d31b2bb1a91d787bed1c9d"
+    },
+    {
+      "path": "btta-page-10.png",
+      "bytes": 351497,
+      "sha256": "50a2a7b83445c5fd484d261bc3fa269a3063a59516517baa3116439d825a8f1e"
+    },
+    {
+      "path": "btta-page-20.png",
+      "bytes": 171988,
+      "sha256": "4c46f2e64903571a2d411a4bf079f64076cb879a24526feb0c11e137397d4ffc"
+    },
+    {
+      "path": "btta-page-22.png",
+      "bytes": 314741,
+      "sha256": "366ff26cb91b1563df875c0571b95b366cf70114b2fd9d547866039b1dfd916d"
+    },
+    {
+      "path": "btta-pretrain_SincAdaptNet.py",
+      "bytes": 4896,
+      "sha256": "1948ce92a0b792fdc80e6fe5de48d1f682de8449bc5463127306bd36d0db42c5"
+    },
+    {
+      "path": "btta-README.md",
+      "bytes": 4050,
+      "sha256": "42ba11212d5817115177b91d685ea51533bdf7c9c2edaa9030f90c23ab029955"
+    },
+    {
+      "path": "btta-repo-tree.json",
+      "bytes": 3347,
+      "sha256": "922f9560ac928560c6a616491ce5add957324cc628372e77a9a85d17d7f4f679"
+    },
+    {
+      "path": "btta-requirements.txt",
+      "bytes": 4495,
+      "sha256": "bc3ab94cb738fa2b9317a5c24dadf53676559bb2661457323af7c69b6f2a7cb8"
+    },
+    {
+      "path": "btta-SincAdaptNet.py",
+      "bytes": 6378,
+      "sha256": "32205021fcd53efe3fba90f1c8b652aa64f13e04da0b10ff5453ffe8d0d5db1a"
+    },
+    {
+      "path": "btta-utils-__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "btta-utils-data_utils.py",
+      "bytes": 3534,
+      "sha256": "65ba2f862f501ce233172967c318a3bf3a0cb68037d615e2acf502c8e1de7753"
+    },
+    {
+      "path": "btta-utils-dataloader.py",
+      "bytes": 9418,
+      "sha256": "8cf8634d49c71deb6139dc21f8169decadd78a2a7735689fae501af1ac799ff0"
+    },
+    {
+      "path": "btta-utils-EEG_augmentation.py",
+      "bytes": 17144,
+      "sha256": "e47a3b083a67f64f3eb345023462e2b4320b1c7bc98b1699d31681aa47a6e760"
+    },
+    {
+      "path": "BUNDLE_README.md",
+      "bytes": 1521,
+      "sha256": "ebf3cd0d4a39fceea9a65d111bb3588a11ab871d02be2e623c5004ddf31130a1"
+    },
+    {
+      "path": "coordinator-context.md",
+      "bytes": 7936,
+      "sha256": "4810d13ea15994deb674a01ab9e7984b24caea549711c97b4f7de785cda3bc35"
+    },
+    {
+      "path": "coordinator-synthesis.md",
+      "bytes": 20630,
+      "sha256": "531a514ba9524ac73ab53dec428c68dc834ea9dee942b2211a56fff1f0f8bd7f"
+    },
+    {
+      "path": "evidence-b/channel-adaptation.pdf",
+      "bytes": 580910,
+      "sha256": "28f1fc0a9fb06772b67586828edbc72b9a80696adca8a54e3e6a00c31ceeffbb"
+    },
+    {
+      "path": "evidence-b/channel-adaptation.txt",
+      "bytes": 33749,
+      "sha256": "4c03ae0163a764c52bedbe40d306ef38828a7fa5aace041221d615d8f4f25b65"
+    },
+    {
+      "path": "evidence-b/channel-figure.png",
+      "bytes": 313266,
+      "sha256": "78d8ccdcd45111ea531e463d05eca5c160da607730cdc028717abe50c304b5b5"
+    },
+    {
+      "path": "evidence-b/hf_reve-base_modeling_reve.py",
+      "bytes": 14890,
+      "sha256": "3292273147a5abc528e5478bab4b29e59ef07aba9c9b9eb12169da8f2f364481"
+    },
+    {
+      "path": "evidence-b/preprocessing_preprocessing_physio.py",
+      "bytes": 4606,
+      "sha256": "c031edea76d75c503b8943182772f0888274e7a5d1b4d70dca4762e5918ad4c9"
+    },
+    {
+      "path": "evidence-b/reve-ablation.png",
+      "bytes": 225888,
+      "sha256": "a85c8a2ec385eb16573d033dcd62e4fff8562b34e0b6c575c1f5c1c17a58b733"
+    },
+    {
+      "path": "evidence-b/reve-commit.json",
+      "bytes": 5754,
+      "sha256": "fc6fde54772f3dde0bcde87fcb09703298c3f41cb4c20ff8edc6ff0b851f7031"
+    },
+    {
+      "path": "evidence-b/reve-tree.json",
+      "bytes": 24375,
+      "sha256": "6007d1508292d01f607fdf2bc68937cbc7681e9aac81765c122c324a698a7ad3"
+    },
+    {
+      "path": "evidence-b/reve.pdf",
+      "bytes": 2717915,
+      "sha256": "83cbe94dc11b77ea7fd4f1fe46bc896cd25e71eba99b5e449325f794d7d63973"
+    },
+    {
+      "path": "evidence-b/reve.txt",
+      "bytes": 128739,
+      "sha256": "f8687c39d4645610ce0ad349d6b86d31b29f460cc7500cec62ee0bcdfcb539e4"
+    },
+    {
+      "path": "evidence-b/src_configs_task_physio.yaml",
+      "bytes": 1132,
+      "sha256": "eec8e80137e125c8bea6a28fd4b26bdd690464ac1d192c20c5aeb94d47a48c14"
+    },
+    {
+      "path": "evidence-b/src_downstream_tasks_dataloader_moabb.py",
+      "bytes": 2905,
+      "sha256": "ece0a550619d05f73f6a0953a4394246ad7d83fa05282f182ebbd802ce40b81d"
+    },
+    {
+      "path": "evidence-b/src_downstream_tasks_position_utils.py",
+      "bytes": 2386,
+      "sha256": "0be566b2ec704fa1daabc9a84f40b3e3bfc58ddd41917f85c87f573b99584767"
+    },
+    {
+      "path": "evidence-d/41467_2025_59652_MOESM1_ESM.pdf",
+      "bytes": 4027394,
+      "sha256": "08d97b9df183c0ea2d6a74d178a87a9184b2a3e1e50e1cf316cd679f6da17b4a"
+    },
+    {
+      "path": "evidence-d/41467_2025_59652_MOESM1_ESM.txt",
+      "bytes": 39239,
+      "sha256": "4967eab28f072266923c9a2bae893fe76cf11b977b7efba019059fa54efb82c3"
+    },
+    {
+      "path": "evidence-d/41467_2025_59652_MOESM2_ESM.pdf",
+      "bytes": 1230164,
+      "sha256": "d03a36ddcab5f68e568236d93e0d5a9330936674b4bcb9f903d3cb2af279daa3"
+    },
+    {
+      "path": "evidence-d/41467_2025_59652_MOESM3_ESM.pdf",
+      "bytes": 15790,
+      "sha256": "7cee1dd2456673e918add266d7639a6df80b7bf89672daad6dde3d346ccb7756"
+    },
+    {
+      "path": "evidence-d/nomad-code-demo_configs_nomad.yaml",
+      "bytes": 941,
+      "sha256": "d026a5077f692c34f061460aecac401b3a47142eb82cb14cb3c83efa955c241f"
+    },
+    {
+      "path": "evidence-d/nomad-code-demo_demo.ipynb",
+      "bytes": 614407,
+      "sha256": "af8fe9362544a7e107283b0a95bb80f83dc7944538065e71aa93be81ed96b544"
+    },
+    {
+      "path": "evidence-d/nomad-code-demo_utils.py",
+      "bytes": 8571,
+      "sha256": "88b4e3dabdccb564a8fa35f60437b4f355810b52b94621e181e4d6bf864d0da0"
+    },
+    {
+      "path": "evidence-d/nomad-code-lfads_tf2_lfads_tf2_subclasses_behavior_models.py",
+      "bytes": 15648,
+      "sha256": "d3839f3d0817a2430764244744029270f59a615ece906d25cf9a66e04b486d00"
+    },
+    {
+      "path": "evidence-d/nomad-code-nomad_nomad_defaults.py",
+      "bytes": 3758,
+      "sha256": "b2de8d6154df948b1e3a02c52c8bc0fe753a29d89785542bc15a9f0484138f62"
+    },
+    {
+      "path": "evidence-d/nomad-code-nomad_nomad_layers.py",
+      "bytes": 1273,
+      "sha256": "0719fa80d97df17753412f7eff058821f5886fc63b020d44a554f389e1045c5a"
+    },
+    {
+      "path": "evidence-d/nomad-code-nomad_nomad_models.py",
+      "bytes": 48258,
+      "sha256": "a323a5194ecc0e8141947af818a5712ef9945d4a1000740d3a49ad8676a0f730"
+    },
+    {
+      "path": "evidence-d/nomad-human-split.png",
+      "bytes": 96715,
+      "sha256": "ede479b7b541cdcf07952d869fe9ceba572eed073a1db357cbc096f13226e0c5"
+    },
+    {
+      "path": "evidence-d/nomad-params.png",
+      "bytes": 159130,
+      "sha256": "eae41d2dcff9b3046cf93f18cbf616d2bc3870329503eb85655bcaad6c9dcab8"
+    },
+    {
+      "path": "evidence-d/nomad-s12.png",
+      "bytes": 285058,
+      "sha256": "2af6be6346f1ee05f7d9c722248beea5d46ca9c290ab169b85806fb5cee27403"
+    },
+    {
+      "path": "evidence-d/nomad-tree.json",
+      "bytes": 24553,
+      "sha256": "daf8132cec529aa271bba8bf8a6d95d6f3210bf5516313b0abf6167566dc223d"
+    },
+    {
+      "path": "evidence-d/nomad-verified.xml",
+      "bytes": 189185,
+      "sha256": "68be2005ec5ea8dbab03ea55b7ba653abe05b772324184feb540fc6b255d4def"
+    },
+    {
+      "path": "evidence-d/nomad.txt",
+      "bytes": 103835,
+      "sha256": "08aefc398ed1ee23dfe9e9f9abe43be6dba0fa7623d533db93a8929b8eb20222"
+    },
+    {
+      "path": "evidence-d/nomad.xml",
+      "bytes": 189185,
+      "sha256": "68be2005ec5ea8dbab03ea55b7ba653abe05b772324184feb540fc6b255d4def"
+    },
+    {
+      "path": "journal-entry.md",
+      "bytes": 2406,
+      "sha256": "36862d8bd33f10ec7df144f368f743045e1a42f63065115d58157602203ba4b0"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 73657,
+      "sha256": "e861d73d1f5ebd9700fe65608dcfda853a35b7023031575ec6f2738886bdcac8"
+    }
+  ]
+}

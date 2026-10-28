@@ -16,7 +16,7 @@ This file records evidence, not planned results. Initial implementation: 20 Octo
 | Real linear training | Seed 33, 30 epochs, CPU: validation selected epoch 2 at **0.4458613**; held-out public test cell mean **0.3796610** on 755 windows / 8 cells |
 | Real linear replay/export | Saved-checkpoint test metrics exactly matched the original JSON; `artifacts/linear-seed33.zip` passed isolated single-window/deep-copy/frozen-state validation |
 | Official source preservation | All 30 vendored official files match the pinned upstream checkout byte-for-byte; generated Benchopt caches excluded |
-| JarvisLabs deployment | Scripts/documentation prepared; no authenticated local account or remote training run |
+| JarvisLabs deployment | 21 October: one on-demand L4 batch completed linear/33 and EEGNet/33,34,35, exact validation/test replay and remote ZIP validation; downloaded checksums matched; machine 542193 verified Paused. See [run log](JARVISLABS_RUN_LOG.md). |
 | Codabench submission | User confirmed successful warm-up submission and score **0.33** on 20 October 2026; not independently read back from the platform |
 
 Synthetic scores are contract evidence only. They are not performance estimates for real EEG. Final trained runs are proven complete by `completed.json` plus a successful inference replay and ZIP validation. A model trained on synthetic data must not be presented as a real-data baseline.
@@ -33,11 +33,11 @@ The initial real-data preparation encountered a 263-character Windows cache file
 | Validation | P05, P08 | 379 |
 | Test | P04, P09 | 755 |
 
-This is one public split and one seed, not a competition placement estimate or evidence of successful harmful-drift prediction. EEGNet has passed the synthetic workflow check; real-data EEGNet training and all JarvisLabs execution remain to be done on the cluster.
+This initial linear result is one public split and one seed, not a competition placement estimate or evidence of successful harmful-drift prediction. The subsequent [21 October GPU batch](JARVISLABS_RUN_LOG.md) completed real-data EEGNet seeds 33/34/35 on the same split; it includes full replay, export and retrieval evidence. Local inference revalidation of those downloaded ZIPs remains unavailable due to missing local dependencies; their remote inference validation and local byte/checksum checks passed.
 
 | ZIP | SHA-256 |
 |---|---|
 | `artifacts/warmup_constant.zip` | `1ddb08722d40aaedcc885fe782afe8672a707fd0ad39244b3ee9a8b903e8c1ab` |
 | `artifacts/linear-seed33.zip` | `525431036c1b1567df2fc39d9770082b91a3a45d6e36377363920137043d9088` |
 
-The constant ZIP's successful platform result is user-confirmed. The trained linear ZIP is locally validated and has not been submitted. No GPU instance was provisioned, and no repository commit or push was performed.
+The constant ZIP's successful platform result is user-confirmed. The original trained linear ZIP is locally validated and has not been submitted. The initial implementation did not provision a GPU; the later JarvisLabs batch used a user-created instance and paused it after retrieval. No repository commit or push was performed.

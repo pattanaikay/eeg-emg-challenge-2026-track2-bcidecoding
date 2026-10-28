@@ -1,0 +1,10 @@
+{
+  "research_date": "2026-10-28",
+  "artifact_files_verified": 59,
+  "content_files_in_manifest": 58,
+  "manifest_sha256": "551a9dce84b95faf649171fecd110b38dffb10ff2299dd621cc2a9cb75220d68",
+  "journal_entry_present": true,
+  "originals_preserved": true,
+  "experiments_run": false,
+  "project_decoder_code_changed": false
+}

@@ -4,7 +4,7 @@ This repository starts the EEG/EMG Foundation Challenge 2026 Track 2 project wit
 
 **Current status:** you reported a successful warm-up submission with score **0.33** on 20 October 2026. The constant reference checks the platform; it learns no EEG decoding. A real-data linear baseline has also completed training, identical inference replay and export: `artifacts/linear-seed33.zip`, with **0.3797** held-out public cell-averaged balanced accuracy. Its local development score is separate from the Codabench result.
 
-**Next:** follow section 3 to run EEGNet on JarvisLabs. Section 1 preserves the steps for reproducing the constant warm-up check. A failed upload consumes a submission, so validate locally before each upload.
+**GPU batch completed, 21 October:** linear seed 33 and EEGNet seeds 33/34/35 trained on real public data, passed saved-checkpoint replay and remote ZIP validation, and were downloaded with matching checksums. The L4 instance is verified paused. See the [actual run log and artifacts](docs/JARVISLABS_RUN_LOG.md); these ZIPs have not been submitted. Section 3 preserves reproduction steps. A failed upload consumes a submission, so validate locally before each upload.
 
 ## 1. First warm-up submission
 
@@ -122,6 +122,7 @@ The official loader/scorer are reused. We do not randomly split EEG windows or s
 - [Methodology and interpretation](docs/METHODOLOGY.md): what the baselines establish, what longitudinal transfer means, and how calibration/forgetting/monitoring fit the current rules.
 - [Paper and documentation reading route](docs/READING.md): primary sources, what to read in each, and the question it should answer.
 - [Current verification status](docs/STATUS.md): completed checks, measured results and remaining limits.
+- [Training explained and Codabench submission steps](docs/TRAINING_AND_SUBMISSION_GUIDE.md): EEGNet, seeds, the completed GPU batch, code changes and the seed 35 upload checklist.
 - [Third-party source notes](NOTICE.md): origin and scope of the vendored kit.
 
 After a real baseline, inspect errors by participant/session/interface and command. Then compare a causal normalization change or a covariance-based reference at the same splits and label budget. Establish whether the change helps before adding a foundation model or a combined adaptation stack. This repository implements the first baseline milestone; it does not claim a novel drift algorithm or clinical validation.
