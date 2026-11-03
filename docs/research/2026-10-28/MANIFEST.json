@@ -2,32 +2,22 @@
   "research_date": "2026-10-28",
   "timezone": "Asia/Kolkata",
   "kind": "literature review and static evidence; no experiments",
-  "file_count": 58,
+  "file_count": 52,
   "files": [
     {
-      "path": "agent-a-adaptation.md",
-      "bytes": 10032,
-      "sha256": "620e689e7da4fed8e77d4a495334fe6722f37321cc2ebbe6ff4c58662b89ae84"
+      "path": "agent-a-btta-quick-explainer.md",
+      "bytes": 8588,
+      "sha256": "a3f73c249322e77eaa59f51d365240afb939be6fb4be8b36b1b07fe0413c1aad"
     },
     {
-      "path": "agent-b-geometry.md",
-      "bytes": 11601,
-      "sha256": "fefbe6fa25c977dfe7272e72d35215ad15698f33f132fc377a7254dca64d1e64"
+      "path": "agent-c-masking-quick-explainer.md",
+      "bytes": 7888,
+      "sha256": "96fb776438519643359a8bd5ecc132ba61c287aa0018105cebe1db6a711395a5"
     },
     {
-      "path": "agent-c-masking.md",
-      "bytes": 10078,
-      "sha256": "eabe8aa5f105bd294eecf1d600c263d7a45e8d8590704d29bab29ab5644a3867"
-    },
-    {
-      "path": "agent-d-dynamics.md",
-      "bytes": 9339,
-      "sha256": "fe8e712fe500afb53a34234fb7924a9185ee47fe4513f5ebfb3b2d92a339e707"
-    },
-    {
-      "path": "agent-e-augmentation.md",
-      "bytes": 10048,
-      "sha256": "5dac886ff7f390a65a548d83752febbe41924ba63238f7fe1324e47d4f1bef8b"
+      "path": "agent-d-nomad-quick-explainer.md",
+      "bytes": 7386,
+      "sha256": "a9c754053206a9801dc25db5b980844efbd9d2330b1d3e271b9a0b54dc7a98ad"
     },
     {
       "path": "btta-BTTA_DG.py",
@@ -38,11 +28,6 @@
       "path": "btta-dg-primary.pdf",
       "bytes": 8587154,
       "sha256": "ad76275c71c12ce661b21656b509a2e7a62cf9d9388951f42632d11a19d84f64"
-    },
-    {
-      "path": "btta-dg-primary.txt",
-      "bytes": 105605,
-      "sha256": "65fd54097578a3a3128a5bbb4dff7069870514cae9764991c6f695945f2caafa"
     },
     {
       "path": "btta-download_data.py",
@@ -116,18 +101,8 @@
     },
     {
       "path": "BUNDLE_README.md",
-      "bytes": 1521,
-      "sha256": "ebf3cd0d4a39fceea9a65d111bb3588a11ab871d02be2e623c5004ddf31130a1"
-    },
-    {
-      "path": "coordinator-context.md",
-      "bytes": 7936,
-      "sha256": "4810d13ea15994deb674a01ab9e7984b24caea549711c97b4f7de785cda3bc35"
-    },
-    {
-      "path": "coordinator-synthesis.md",
-      "bytes": 20630,
-      "sha256": "531a514ba9524ac73ab53dec428c68dc834ea9dee942b2211a56fff1f0f8bd7f"
+      "bytes": 1741,
+      "sha256": "a06526511470165abcf0a19c2709e66a13f8bdd9f044a66f85121231c14fa3c8"
     },
     {
       "path": "evidence-b/channel-adaptation.pdf",
@@ -283,11 +258,6 @@
       "path": "evidence-d/nomad.xml",
       "bytes": 189185,
       "sha256": "68be2005ec5ea8dbab03ea55b7ba653abe05b772324184feb540fc6b255d4def"
-    },
-    {
-      "path": "journal-entry.md",
-      "bytes": 2406,
-      "sha256": "36862d8bd33f10ec7df144f368f743045e1a42f63065115d58157602203ba4b0"
     },
     {
       "path": "REPORT.md",

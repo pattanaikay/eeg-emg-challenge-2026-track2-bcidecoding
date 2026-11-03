@@ -122,3 +122,28 @@ Chat source: **BCI Decoding EEG 2026 Challenge**, thread `01a11248-c4e5-77a3-91f
 - **Recommendations, not user decisions:** Proposed matched representation controls, isolated constrained-frequency learning, causal statistical normalization and modest augmentation as candidates. Full SSL, dynamics alignment and GMM adaptation were deferred in the recommendation. **The user has not yet selected a next experiment in this review.**
 - **Execution/accounting boundary:** No decoder code was changed, no model or GPU experiment was run, and no submission was made. Reports and this journal were the only project-document changes. Per-agent, coordinator and combined token counts were unavailable; no hard combined cap was verified. Published-paper results remain unreplicated here.
 
+
+## 02 November 2026 — five-agent evidence and competition-fit review
+
+- Thinking about using BTTA-DG's techniques in an implementation. Calibration layer on a frozen decoder. Also planning to try NoMAD and masking geometries techniques from the papers. Trying to figure out if there is a method to combine some of these approaches to get a better decoder. 
+
+Rough noted from BTTA-DG paper:
+
+Does the method preserve task information while tolerating recording variation?
+
+For our first test, the falsifier is straightforward: if the Sinc front end or the confidence summary does not improve participant-held-out cell-balanced accuracy across several seeds—or improves one participant while harming another—we should not add the more complicated GMM. A method that looks elegant but amplifies confident mistakes is harmful drift adaptation, not successful adaptation.
+
+Huan Luo, Na Lu, Xiaopeng Wang, and Xu Niu, “Bayesian Test-Time Adaptation via Dirichlet feature projection and GMM-Driven Inference for Motor Imagery EEG Decoding,” ICLR 2026. Official proceedings entry · Full paper PDF · Pinned implementation audit.
+
+The useful next comparison is a fair three-way baseline on the same participant split:
+
+**EEGNet versus ShallowConvNet/filter-bank versus shrinkage covariance + Riemannian/LDA**
+
+Use only training participants for normalization, feature fitting, model selection, and any self-supervised pretraining. Report the official participant × session × interface cell-balanced accuracy, per-class recall, and the score separately for the repeated-session participant. Keep public P04/P09 as a post-selection diagnostic, not as another tuning set.
+
+
+## 02 November 2026 — Agent C/D explainers and warm-up leaderboard audit
+
+- Added plain-language explainers for masking/representation objectives and NoMAD latent-dynamics alignment: [Agent C](C:/Projects/EEG-EMG-Foundation-Challenge-2026/eeg-emg-challenge-2026-track2-bcidecoding/docs/research/2026-10-28/agent-c-masking-quick-explainer.md) and [Agent D](C:/Projects/EEG-EMG-Foundation-Challenge-2026/eeg-emg-challenge-2026-track2-bcidecoding/docs/research/2026-10-28/agent-d-nomad-quick-explainer.md). These are learning artifacts, not experiments.
+- Read the public Codabench warm-up leaderboard (phase 30961) and preserved the metadata and 211-row leaderboard response: [audit](C:/Projects/EEG-EMG-Foundation-Challenge-2026/eeg-emg-challenge-2026-track2-bcidecoding/docs/research/2026-11-02/codabench-warmup-leaderboard-audit.md). The primary column is balanced-accuracy cell mean; 45 rows show 1.00 and 74 are ≥0.90. Several self-reported model names mention public lookup, all-public-data training, shallow convolution/EA, covariance/manifold, Riemannian, PSD/phase/LDA, or filter-bank ensembles.
+- **Interpretation boundary:** the public page exposes only self-reported model names and visible scores; no competitor code, weights, logs or detailed results were public in the response. The high warm-up cluster is therefore a leakage/public-data-risk signal, not verified evidence of sealed-ready decoding or misconduct. No experiment, submission, or project decoder code change was made.

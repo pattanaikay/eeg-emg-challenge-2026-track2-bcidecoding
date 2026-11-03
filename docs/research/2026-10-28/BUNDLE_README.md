@@ -1,8 +1,8 @@
 # Research bundle — 28 October 2026
 
-Start with **REPORT.md**: verified competition/project context, five full agent reports in assignment order, then coordinator synthesis, prioritized proposals, open questions and accounting limits.
+Start with **REPORT.md**: verified competition/project context, five full agent reports in assignment order, then coordinator synthesis, prioritized proposals, open questions and accounting limits. The report is the single readable narrative; duplicate per-agent and coordinator markdown copies were removed to keep this folder navigable.
 
-The five `agent-*.md` files are also supplied separately. `coordinator-context.md` and `coordinator-synthesis.md` preserve the coordinator's working sections; `journal-entry.md` is the exact review entry appended to the main research journal.
+For a fast first pass on Agents A–D, read **agent-a-btta-quick-explainer.md**, **agent-c-masking-quick-explainer.md**, and **agent-d-nomad-quick-explainer.md**. They translate the papers into plain language, mark what each method preserves and loses, and identify the paper/code details that matter for our competition.
 
 Collected reference material includes the BTTA-DG proceedings PDF, extracted text, checked pages and pinned source copies; `evidence-b/` contains geometry/adaptation references, and `evidence-d/` contains NoMAD references. Agents C/E used web sources without creating separate downloaded-reference files. Reference `.py` files are static evidence, not installed project modules or executed experiments. The reports record source URLs, commits where obtained, and access limits.
 
