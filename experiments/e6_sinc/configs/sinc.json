@@ -1,0 +1,1 @@
+{"experiment":"e6_sinc","model":"sinc","normalization":"source-zscore","n_filters":8,"kernel_length":31,"spatial_multiplier":2,"pool_bins":4,"dropout":0.25}

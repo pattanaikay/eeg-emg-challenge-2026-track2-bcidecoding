@@ -1,0 +1,7 @@
+# shortcut: h5py/numcodecs stable releases lack CPython 3.15 wheels; replace these
+# upstream development pins when stable 3.15 wheels are released and verified.
+# Find-links is scoped to these two project-owned wheel pages, not an extra index.
+--find-links https://pypi.anaconda.org/scientific-python-nightly-wheels/simple/h5py/
+--find-links https://pypi.anaconda.org/scientific-python-nightly-wheels/simple/numcodecs/
+h5py==3.17.0.dev0; python_version >= '3.15'
+numcodecs==0.17.2.dev1+g4afa6287f; python_version >= '3.15'

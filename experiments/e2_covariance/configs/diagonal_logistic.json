@@ -1,0 +1,7 @@
+{
+  "experiment": "e2_covariance",
+  "model": "covariance-diagonal",
+  "normalization": "none",
+  "head": "logistic",
+  "C": 1.0
+}

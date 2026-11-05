@@ -1,0 +1,9 @@
+{
+  "experiment": "e4_csp",
+  "model": "fbcsp",
+  "normalization": "none",
+  "bands": [[4, 8], [8, 13], [13, 30], [30, 45]],
+  "components_per_class": 2,
+  "head": "logistic",
+  "C": 1.0
+}

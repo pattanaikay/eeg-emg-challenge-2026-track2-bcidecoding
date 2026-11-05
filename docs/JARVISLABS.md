@@ -1,10 +1,10 @@
 # Running on JarvisLabs
 
-The code is portable Python plus two Linux shell scripts. It requires **Python 3.12+** for the real EEG stack. Keep the project and data under the instance's persistent home directory (normally `/home/` for containers), not `/tmp` or another ephemeral location.
+The code is portable Python plus two Linux shell scripts. It requires **Python 3.15** for the real EEG stack. Keep the project and data under the instance's persistent home directory (normally `/home/` for containers), not `/tmp` or another ephemeral location.
 
 ## Manual upload route
 
-1. Choose a Python 3.12+ PyTorch GPU template and verify its Python/CUDA torch combination.
+1. Choose a Python 3.15 PyTorch GPU template and verify its Python/CUDA torch combination.
 2. Upload the complete source folder, including `vendor/competition/`. No submodule download is needed.
 3. In the cluster terminal, change into that folder and run:
 
@@ -16,7 +16,7 @@ source .venv/bin/activate
 python -m pytest tests -q
 ```
 
-The setup script inherits the template's packages through `--system-site-packages`; it does not intentionally replace a satisfactory CUDA torch installation. Requirements are not a command to switch your CUDA build. If your template has Python 3.11, select/install a supported interpreter first; a 3.12 environment cannot inherit 3.11 torch wheels. Use the [official PyTorch installer](https://pytorch.org/get-started/locally/) for a matching GPU build rather than a CPU-only wheel.
+The setup script inherits the template's packages through `--system-site-packages`; it does not intentionally replace a satisfactory CUDA torch installation. Requirements are not a command to switch your CUDA build. Select/install Python 3.15 first; a 3.15 environment cannot inherit Torch wheels built for an older Python. The full data stack currently uses the two pinned development wheels in requirements-python315.txt; verify installation and smoke tests before real training. Use the [official PyTorch installer](https://pytorch.org/get-started/locally/) for a matching GPU build rather than a CPU-only wheel.
 
 Then run:
 
@@ -35,7 +35,7 @@ Authenticate locally with `jl status --json` before using account operations. Ke
 jl run . --script run.py --on MACHINE_ID --requirements requirements-training.txt --json --yes -- smoke --include-eegnet
 ```
 
-Use a Python 3.12+ instance for that environment. Directory targets get a persistent project venv. After smoke checks succeed, data preparation is explicit:
+Use a Python 3.15 instance for that environment. Directory targets get a persistent project venv. After smoke checks succeed, data preparation is explicit:
 
 ```bash
 jl run . --script run.py --on MACHINE_ID --requirements requirements-training.txt --json --yes -- prepare

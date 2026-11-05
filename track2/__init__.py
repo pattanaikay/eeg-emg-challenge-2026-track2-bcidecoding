@@ -1,4 +1,4 @@
-"""Development tools; inference remains entirely in the root submission.py."""
+"""Development tools; exported inference is assembled into one submission.py."""
 
 import os
 import sys

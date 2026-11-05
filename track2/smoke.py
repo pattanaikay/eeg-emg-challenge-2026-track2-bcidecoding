@@ -62,7 +62,7 @@ def metric_and_stream_checks():
         raise AssertionError("Out-of-order windows were accepted")
 
 
-def smoke(include_eegnet=False):
+def smoke(include_eegnet=False, tier1=False):
     from track2.packaging import package, validate
     from track2.workflow import train, evaluate_run
 
@@ -100,6 +100,43 @@ def smoke(include_eegnet=False):
             assert actual == expected, "Saved checkpoint replay changed the measured outcome"
             package(scratch / f"{kind}_synthetic_check.zip", run)
             print(f"PASS: {kind} optimization, best-checkpoint selection, export, and fresh replay", flush=True)
+    if tier1:
+        tier1_smoke()
     print(json.dumps({"status": "PASS", "real_eeg_tested": False,
                       "eegnet_tested": include_eegnet,
+                      "tier1_tested": tier1,
                       "scope": "offline scientific-boundary and workflow checks"}, indent=2), flush=True)
+
+
+def tier1_smoke():
+    """Exercise all named comparisons through the real fit/reload/flat-ZIP path."""
+    from track2.packaging import package
+    from track2.workflow import evaluate_run, train
+
+    cache = ROOT / ".cache"
+    cache.mkdir(exist_ok=True)
+    results = []
+    with tempfile.TemporaryDirectory(prefix="tier1-smoke-", dir=cache) as scratch:
+        scratch = Path(scratch)
+        configs = [*(ROOT / "experiments").glob("*/configs/*.json"),
+                   *(ROOT / "experiments/controls").glob("*.json")]
+        for config in sorted(configs):
+            folder = config.parent.name if config.parent.name == "controls" else config.parent.parent.name
+            name = f"{folder}-{config.stem}"
+            run = scratch / name
+            train(SimpleNamespace(config=config, model=None, data="simulated", data_dir=ROOT / "data",
+                                  output=run, seed=33, epochs=1, lr=None, batch_size=16,
+                                  device="cpu", num_workers=0, protocol="screen", fold=None))
+            completed = json.loads((run / "completed.json").read_text())
+            for split, expected in (("val", completed["validation"]), ("test", completed["test"])):
+                actual = evaluate_run(SimpleNamespace(run=run, data="simulated", data_dir=ROOT / "data",
+                                                     device="cpu", split=split))
+                assert actual == expected, f"{name}: saved checkpoint metric parity failed"
+                assert (run / f"{split}_predictions.csv").read_bytes() == (run / "replay" / f"{split}_predictions.csv").read_bytes(), name
+            package(scratch / f"{name}.zip", run)
+            results.append({"preset": str(config.relative_to(ROOT)),
+                            "parameters": json.loads((run / "parameters.json").read_text()),
+                            "training_and_scoring_seconds": completed["seconds"]})
+            print(f"PASS: {name} fit, checkpoint selection/reload, prediction replay and isolated ZIP", flush=True)
+    (cache / "tier1-smoke-results.json").write_text(json.dumps({
+        "real_eeg_tested": False, "presets": results}, indent=2), encoding="utf-8")

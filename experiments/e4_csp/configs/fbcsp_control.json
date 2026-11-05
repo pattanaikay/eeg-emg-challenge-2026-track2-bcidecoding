@@ -1,0 +1,8 @@
+{
+  "experiment": "e4_csp",
+  "model": "bandpower-control",
+  "normalization": "none",
+  "bands": [[4, 8], [8, 13], [13, 30], [30, 45]],
+  "head": "logistic",
+  "C": 1.0
+}

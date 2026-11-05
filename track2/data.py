@@ -5,6 +5,7 @@ mix participant/session conditions and answer a different transfer question.
 """
 
 import csv
+import copy
 import json
 import os
 from pathlib import Path
@@ -49,7 +50,8 @@ def prepare(data_dir):
     audit(data_dir)
 
 
-def load(kind, data_dir, device="cpu", batch_size=32, seed=33, num_workers=0):
+def load(kind, data_dir, device="cpu", batch_size=32, seed=33, num_workers=0,
+         reserve_p10_later=False, protocol=None, fold=None):
     """Return train/val/test loaders while keeping metadata outside predict(X)."""
     if kind == "simulated":
         return simulated(device, batch_size, seed)
@@ -77,6 +79,12 @@ def load(kind, data_dir, device="cpu", batch_size=32, seed=33, num_workers=0):
     if (meta["n_chans"], meta["n_times"], meta["n_classes"]) != (41, 480, 3):
         raise ValueError(f"PROTEUS contract changed: {meta}. Review before training.")
     check_subject_split(loaders)
+    if protocol is not None:
+        from track2.splits import partition
+        loaders = partition(loaders, protocol, fold, num_workers)
+    elif reserve_p10_later:
+        loaders["longitudinal"] = reserve_p10_later_sessions(loaders, num_workers)
+        check_subject_split(loaders)
     return loaders, serializable_meta(meta)
 
 
@@ -87,11 +95,71 @@ def serializable_meta(meta):
             "ch_names": list(meta["ch_names"]) if meta.get("ch_names") else None}
 
 
+def _trial_number(value, field):
+    try:
+        return int(str(value).rsplit("-", 1)[-1])
+    except ValueError as error:
+        raise ValueError(f"Invalid PROTEUS {field} value: {value!r}") from error
+
+
+def reserve_p10_late_indices(dataset):
+    """Split P10 sessions 2–3 from fitting, retaining their chronological order."""
+    keep, later = [], []
+    segments = dataset.seg_ds.segments
+    for position in dataset.index:
+        position = int(position)
+        event = segments[position].trigger.to_dict()
+        subject = str(event.get("subject", "")).rsplit("/", 1)[-1]
+        session = str(event.get("session", ""))
+        if subject.removeprefix("sub-") != "P10" or session.removeprefix("ses-") not in {"2", "3"}:
+            keep.append(position)
+            continue
+        later.append((int(session.removeprefix("ses-")),
+                      _trial_number(event.get("run", ""), "run"),
+                      float(dataset.onset[position]), position))
+    if len(later) != 385 or {row[0] for row in later} != {2, 3}:
+        raise ValueError(f"Expected the 385 P10 session-2/3 windows, found {len(later)}")
+    later.sort()
+    return np.asarray(keep, dtype=np.int64), np.asarray(
+        [row[-1] for row in later], dtype=np.int64)
+
+
+def reserve_p10_later_sessions(loaders, num_workers=0):
+    """Keep P10 sessions 2–3 out of fit; replay them as an isolated diagnostic."""
+    from torch.utils.data import DataLoader
+    from benchmark_utils.nb_task import _DeviceLoader
+
+    source = loaders["train"]
+    dataset = source.dataset
+    keep, later = reserve_p10_late_indices(dataset)
+    counts = (len(keep), len(loaders["val"].dataset), len(loaders["test"].dataset))
+    if counts != (1136, 379, 755):
+        raise ValueError(f"Corrected PROTEUS split must be 1136/379/755 windows; got {counts}")
+    diagnostic_dataset = copy.copy(dataset)
+    diagnostic_dataset.index = later
+    dataset.index = keep
+    loaders["train"] = _DeviceLoader(
+        DataLoader(dataset, batch_size=source.batch_size, shuffle=True,
+                   num_workers=num_workers, pin_memory=source.pin_memory,
+                   persistent_workers=num_workers > 0),
+        source.device,
+    )
+    return _DeviceLoader(
+        DataLoader(diagnostic_dataset, batch_size=source.batch_size, shuffle=False,
+                   num_workers=num_workers, pin_memory=source.pin_memory,
+                   persistent_workers=num_workers > 0),
+        source.device,
+    )
+
+
 def split_rows(loaders):
     """Read identifiers from segment metadata, without reading every EEG tensor."""
     rows = []
     for split, loader in loaders.items():
         ds = loader.dataset
+        if hasattr(ds, "rows"):
+            rows.extend({**row, "split": split} for row in ds.rows)
+            continue
         if not hasattr(ds, "seg_ds"):
             continue  # synthetic data have no human participant identity
         for position in ds.index:
@@ -106,7 +174,8 @@ def split_rows(loaders):
 
 def check_subject_split(loaders):
     rows = split_rows(loaders)
-    groups = {split: {r["subject"] for r in rows if r["split"] == split} for split in loaders}
+    splits = ("train", "val", "test")
+    groups = {split: {r["subject"] for r in rows if r["split"] == split} for split in splits}
     for left, subjects in groups.items():
         if "" in subjects:
             raise ValueError("Prepared windows lack participant identity for the split audit")

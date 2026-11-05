@@ -1,0 +1,6 @@
+{
+  "experiment": "e2_covariance",
+  "model": "covariance-diagonal",
+  "normalization": "none",
+  "head": "lda"
+}

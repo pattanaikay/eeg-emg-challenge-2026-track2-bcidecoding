@@ -1,0 +1,8 @@
+{
+  "experiment": "e5_spatial_power",
+  "model": "fbcnet",
+  "normalization": "none",
+  "bands": [[4.0, 8.0], [8.0, 13.0], [13.0, 30.0], [30.0, 45.0]],
+  "n_filters_spat": 4,
+  "stride_factor": 4
+}

@@ -1,0 +1,8 @@
+{
+  "experiment": "e5_spatial_power",
+  "model": "shallowconvnet",
+  "normalization": "none",
+  "n_filters_time": 8,
+  "n_filters_spat": 8,
+  "drop_prob": 0.5
+}

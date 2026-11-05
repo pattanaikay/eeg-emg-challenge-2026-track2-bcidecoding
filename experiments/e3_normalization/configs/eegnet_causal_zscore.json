@@ -1,0 +1,1 @@
+{"experiment":"e3_normalization","model":"eegnet","normalization":"causal-zscore","prior_windows":10}

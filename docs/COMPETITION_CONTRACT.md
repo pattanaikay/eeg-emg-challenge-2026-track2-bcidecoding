@@ -1,6 +1,6 @@
 # Model-facing contract and evaluation boundaries
 
-Contract snapshot: **20 October 2026**. Source authority is the active Codabench Track description/phase, the scientific FAQ, and executable objective. Older NeuralBench prose still contains incompatible descriptions. Recheck when the phase changes.
+Contract snapshot: **20 October 2026**, with public FAQ/submission-guide recheck on **5 November 2026**. The input, chronological single-window/session-reset and equal-cell scoring rules remain as described below. All Python inference code must be in one `submission.py`; additional Python modules are unsupported. The project assembles experiment source into that file. The vendored revision remains unchanged. Source authority is the active Codabench Track description/phase, the scientific FAQ, and executable objective; active-platform enforcement was not independently inspected in this implementation step.
 
 ## Input and prediction
 

@@ -49,7 +49,9 @@ def validate(archive_path):
     accidentally import an unshipped model definition from the project.
     """
     archive_path = Path(archive_path).resolve()
-    with tempfile.TemporaryDirectory(prefix="track2-validate-") as scratch:
+    cache = ROOT / ".cache"
+    cache.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="track2-validate-", dir=cache) as scratch:
         scratch = Path(scratch)
         with zipfile.ZipFile(archive_path) as archive:
             names = archive.namelist()

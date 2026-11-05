@@ -127,3 +127,154 @@ def test_detached_configuration_is_local_and_respects_explicit_config(tmp_path, 
     monkeypatch.setenv("NEURALBENCH_CONFIG", str(explicit))
     data.configure_neuralbench(tmp_path / "different-data")
     assert json.loads(explicit.read_text()) == {"do_not_change": True}
+
+
+
+def test_p10_later_sessions_are_reserved_in_chronological_order():
+    from types import SimpleNamespace
+    from track2.data import reserve_p10_late_indices
+
+    segments, onsets = [], []
+    def add(subject, session, run, onset):
+        event = {"subject": f"dataset/sub-{subject}", "session": f"ses-{session}",
+                 "run": f"run-{run}"}
+        segments.append(SimpleNamespace(trigger=SimpleNamespace(to_dict=lambda e=event: e)))
+        onsets.append(onset)
+
+    add("P10", 1, 1, 0)
+    add("P01", 1, 1, 0)
+    for session, count in ((3, 199), (2, 186)):
+        for index in range(count):
+            add("P10", session, 1 + index // 50, index % 50)
+
+    dataset = SimpleNamespace(seg_ds=SimpleNamespace(segments=segments),
+                              index=np.arange(len(segments)), onset=np.asarray(onsets))
+    keep, later = reserve_p10_late_indices(dataset)
+    assert len(keep) == 2
+    assert len(later) == 385
+    events = [segments[int(i)].trigger.to_dict() for i in later]
+    assert [event["session"] for event in events[:186]] == ["ses-2"] * 186
+    assert [event["session"] for event in events[186:]] == ["ses-3"] * 199
+    assert [(event["session"], event["run"], onsets[int(i)]) for event, i in zip(events, later)] == sorted(
+        (event["session"], event["run"], onsets[int(i)]) for event, i in zip(events, later))
+
+
+def test_tier_one_feature_models_return_finite_scores():
+    from submission import build_model, shrinkage_covariances
+
+    X = torch.randn(2, 4, 120)
+    meta = {"n_chans": 4, "n_times": 120, "n_classes": 3, "sfreq": 120.0}
+    for kind in ("bandpower", "bandpower-low", "covariance-diagonal", "covariance"):
+        model = build_model(kind, meta).eval()
+        if kind == "covariance":
+            model.reference_cov.copy_(shrinkage_covariances(X).mean(dim=0))
+        scores = model(X)
+        assert scores.shape == (2, 3)
+        assert torch.isfinite(scores).all()
+    covariance = shrinkage_covariances(X)
+    assert torch.linalg.eigvalsh(covariance).min() > 0
+
+
+def test_robust_normalization_uses_only_current_window_samples():
+    from submission import robust_window_normalize
+
+    X = torch.randn(2, 3, 80)
+    first = robust_window_normalize(X[:1])
+    both = robust_window_normalize(X)
+    torch.testing.assert_close(first, both[:1])
+    torch.testing.assert_close(torch.quantile(first, 0.5, dim=-1), torch.zeros(1, 3), atol=1e-5, rtol=0)
+
+
+
+def test_source_normalizer_fits_only_the_supplied_training_loader():
+    from types import SimpleNamespace
+    from track2.workflow import fit_source_normalizer
+
+    loaders, _ = simulated(batch_size=12, seed=51)
+    source = loaders["train"].dataset.X
+    model = SimpleNamespace(input_mean=torch.zeros(1, source.shape[1], 1),
+                            input_scale=torch.ones(1, source.shape[1], 1))
+    fit_source_normalizer(model, loaders["train"])
+    torch.testing.assert_close(model.input_mean.flatten(), source.mean(dim=(0, 2)))
+    torch.testing.assert_close(model.input_scale.flatten(), source.std(dim=(0, 2), unbiased=False))
+
+
+
+def test_plain_eegnet_keeps_legacy_state_dict_keys(monkeypatch):
+    import sys
+    import types
+    from torch import nn
+    from submission import build_model
+
+    class FakeEEGNet(nn.Module):
+        def __init__(self, **_kwargs):
+            super().__init__()
+            self.weight = nn.Parameter(torch.ones(1))
+
+        def forward(self, X):
+            return X.new_zeros((len(X), 3))
+
+    package = types.ModuleType("braindecode")
+    package.__path__ = []
+    models = types.ModuleType("braindecode.models")
+    models.EEGNet = FakeEEGNet
+    monkeypatch.setitem(sys.modules, "braindecode", package)
+    monkeypatch.setitem(sys.modules, "braindecode.models", models)
+
+    meta = {"n_chans": 4, "n_times": 120, "n_classes": 3, "sfreq": 120.0}
+    assert set(build_model("eegnet", meta).state_dict()) == {"net.weight"}
+    assert {"input_mean", "input_scale"} <= set(
+        build_model("eegnet-source-zscore", meta).state_dict())
+
+
+
+def test_p10_reservation_rebuilds_sampler_and_chronological_loader():
+    from types import SimpleNamespace
+    from torch.utils.data import DataLoader
+    from benchmark_utils.nb_task import _DeviceLoader
+    from track2.data import reserve_p10_later_sessions
+
+    segments, onsets = [], []
+    def add(subject, session, run, onset):
+        event = {"subject": f"dataset/sub-{subject}", "session": f"ses-{session}",
+                 "run": f"run-{run}"}
+        segments.append(SimpleNamespace(trigger=SimpleNamespace(to_dict=lambda e=event: e)))
+        onsets.append(onset)
+
+    for index in range(944):
+        add("P01", 1, 1 + index // 50, index % 50)
+    for index in range(192):
+        add("P10", 1, 1 + index // 50, index % 50)
+    for session, count in ((3, 199), (2, 186)):
+        for index in range(count):
+            add("P10", session, 1 + index // 50, index % 50)
+
+    class Dataset:
+        def __init__(self):
+            self.seg_ds = SimpleNamespace(segments=segments)
+            self.index = np.arange(len(segments))
+            self.onset = np.asarray(onsets)
+
+        def __len__(self):
+            return len(self.index)
+
+        def __getitem__(self, index):
+            position = int(self.index[index])
+            session = int(segments[position].trigger.to_dict()["session"].split("-")[-1])
+            return (torch.zeros(2, 8), torch.tensor(0),
+                    {"record_id": position, "onset": onsets[position],
+                     "stream_id": session, "context_id": 0})
+
+    dataset = Dataset()
+    original = _DeviceLoader(DataLoader(dataset, batch_size=32, shuffle=True), "cpu")
+    validation = DataLoader(torch.utils.data.TensorDataset(torch.zeros(379, 1), torch.zeros(379)))
+    test = DataLoader(torch.utils.data.TensorDataset(torch.zeros(755, 1), torch.zeros(755)))
+    loaders = {"train": original, "val": validation, "test": test}
+    longitudinal = reserve_p10_later_sessions(loaders)
+    assert len(loaders["train"].dataset) == 1136
+    assert len(longitudinal.dataset) == 385
+    seen = [int(i) for _X, _y, info in longitudinal for i in info["record_id"].tolist()]
+    assert seen == [int(i) for i in longitudinal.dataset.index]
+    assert len(set(seen)) == 385
+    sessions = [segments[i].trigger.to_dict()["session"] for i in seen]
+    assert sessions == ["ses-2"] * 186 + ["ses-3"] * 199

@@ -1,21 +1,24 @@
 # Track 2: EEG cross-session and cross-participant decoding
 
-This repository starts the EEG/EMG Foundation Challenge 2026 Track 2 project with a working submission contract, public PROTEUS data tools, supervised baselines, and reproducible evaluation. The immediate deliverable is a validated ZIP for the warm-up. The scientific goal is reliable transfer with less labeled data and, later, useful prediction of harmful drift.
+This repository provides the EEG/EMG Foundation Challenge 2026 Track 2 submission contract, public PROTEUS tools, supervised baselines, six Tier 1 experiment paths and reproducible evaluation. The scientific goal is reliable transfer with less labeled data and, later, useful prediction of harmful drift.
+
+**Tier 1 implementation, 5 November:** all six experiment paths now share config-based training, guarded screening/outer splits, saved inference replay and single-file export. Start with the [experiment index](experiments/README.md) and [execution instructions for Windows/JarvisLabs](docs/TIER1_EXECUTION.md). The project uses Python 3.15 (`.python-version`); use `.venv\Scripts\python.exe` explicitly instead of the shell's older default. See the execution guide for dependency compatibility and current verification. New decoder performance has not been measured on real EEG.
 
 **Current status:** you reported a successful warm-up submission with score **0.33** on 20 October 2026. The constant reference checks the platform; it learns no EEG decoding. A real-data linear baseline has also completed training, identical inference replay and export: `artifacts/linear-seed33.zip`, with **0.3797** held-out public cell-averaged balanced accuracy. Its local development score is separate from the Codabench result.
 
 **GPU batch completed, 21 October:** linear seed 33 and EEGNet seeds 33/34/35 trained on real public data, passed saved-checkpoint replay and remote ZIP validation, and were downloaded with matching checksums. The L4 instance is verified paused. See the [actual run log and artifacts](docs/JARVISLABS_RUN_LOG.md); these ZIPs have not been submitted. Section 3 preserves reproduction steps. A failed upload consumes a submission, so validate locally before each upload.
 
-## 1. First warm-up submission
+## 1. Historical warm-up contract check
 
-Use Python **3.12 or newer** for the complete project. The four official neural packages require it. A dependency-light constant/linear smoke test also works on Python 3.11.
+The successful warm-up submission below is historical. For new experiments use the Tier 1 execution guide; check current official phase instructions before any separately requested submission.
+
+Use **Python 3.15** for this project, as requested. The upstream NeuralBench stack has a lower minimum, but the project environment and new execution commands target 3.15. See `requirements-python315.txt` and the execution guide for the two upstream development-wheel pins currently needed.
 
 ```bash
-python -m venv --system-site-packages .venv
-# Linux / JarvisLabs:
+# Linux with Python 3.15 installed; Windows setup is in docs/TIER1_EXECUTION.md.
+python3.15 -m venv --system-site-packages .venv
 source .venv/bin/activate
-# Windows PowerShell instead:
-# .venv\Scripts\Activate.ps1
+export PYYAML_FORCE_LIBYAML=0
 python -m pip install -r requirements.txt
 python run.py warmup
 ```
@@ -41,7 +44,7 @@ The public release has 10 participants, 14 sessions and 112 runs. Only two parti
 
 ## 3. Upload the project to JarvisLabs
 
-Follow [the JarvisLabs guide](docs/JARVISLABS.md). Use a Python 3.12+ PyTorch GPU environment, put the project under persistent `/home/`, and run:
+Follow [the JarvisLabs guide](docs/JARVISLABS.md). Use a Python 3.15 PyTorch GPU environment, put the project under persistent `/home/`, and run:
 
 ```bash
 bash scripts/setup_jarvis.sh

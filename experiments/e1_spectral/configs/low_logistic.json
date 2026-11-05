@@ -1,0 +1,8 @@
+{
+  "experiment": "e1_spectral",
+  "model": "bandpower-low",
+  "normalization": "none",
+  "bands": [[4, 8], [8, 13], [13, 30], [30, 45], [1, 4]],
+  "head": "logistic",
+  "C": 1.0
+}
